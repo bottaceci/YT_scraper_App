@@ -8,7 +8,7 @@ from typing import Any
 import flet as ft
 
 import scraper
-from models import RunSummary
+from models import RunSummary, ChannelState
 import storage
 from channels import CHANNELS
 
@@ -203,7 +203,7 @@ def main(page: ft.Page) -> None:
             checked_at = run_context["checked_at"]
 
             total_channels = len(CHANNELS)
-            updated_channels: dict[str, Any] = {}
+            updated_channels: dict[str, ChannelState] = {}
             new_items: list[dict[str, Any]] = []
             errors: list[dict[str, str]] = []
 

@@ -15,7 +15,8 @@ from storage import (
 from models import (
     VideoItem,
     ChannelCheckResult,
-    RunSummary
+    RunSummary,
+    ChannelState
 )
 
 
@@ -76,6 +77,12 @@ def load_run_context() -> dict[str, Any]:
         "checked_at": _now_iso(),
     }
 
+def load_channel_state(raw_state: dict[str, Any], fallback_title: str) -> ChannelState:
+    return ChannelState(
+        channel_title=str(raw_state.get("channel_title", fallback_title)),
+        urls=[str(url) for url in raw_state.get("urls", [])],
+        last_checked=raw_state.get("last_checked"),
+    )
 
 def process_channel(
     channel: dict[str, str],
@@ -85,14 +92,15 @@ def process_channel(
 ) -> ChannelCheckResult:
     channel_id, fallback_label = validate_channel_config(channel)
 
-    previous_channel_state = seen_channels.get(channel_id, {})
+    raw_previous_channel_state = seen_channels.get(channel_id, {})
+    previous_channel_state = load_channel_state(raw_previous_channel_state, fallback_label)
 
     channel_title, items, error_message = parse_channel(channel_id, fallback_label)
     current_urls = [item.url for item in items if item.url]
 
     old_urls: list[str] | None = None
     if channel_id in seen_channels:
-        old_urls = [str(url) for url in previous_channel_state.get("urls", [])]
+        old_urls = list(previous_channel_state.urls)
     elif channel_title in legacy_seen_by_title:
         old_urls = [str(url) for url in legacy_seen_by_title[channel_title]]
 
@@ -106,17 +114,17 @@ def process_channel(
     fetch_succeeded = bool(items) or not error_message
 
     if fetch_succeeded:
-        updated_channel_state = {
-            "channel_title": channel_title,
-            "urls": current_urls,
-            "last_checked": checked_at,
-        }
+        updated_channel_state = ChannelState(
+            channel_title=channel_title,
+            urls=current_urls,
+            last_checked=checked_at,
+        )
     else:
-        updated_channel_state = {
-            "channel_title": previous_channel_state.get("channel_title", channel_title),
-            "urls": [str(url) for url in previous_channel_state.get("urls", [])],
-            "last_checked": previous_channel_state.get("last_checked"),
-        }
+        updated_channel_state = ChannelState(
+            channel_title=previous_channel_state.channel_title or channel_title,
+            urls=list(previous_channel_state.urls),
+            last_checked=previous_channel_state.last_checked,
+        )
 
     error_payload: dict[str, str] | None = None
     if error_message:
@@ -136,7 +144,7 @@ def process_channel(
 
 
 def finalize_run(
-    updated_channels: dict[str, Any],
+    updated_channels: ChannelState,
     new_items: list[dict[str, Any]],
     errors: list[dict[str, str]],
     checked_at: str,
@@ -147,7 +155,10 @@ def finalize_run(
 
     seen_payload = {
         "version": 1,
-        "channels": updated_channels,
+        "channels": {
+            channel_id: asdict(channel_state)
+            for channel_id, channel_state in updated_channels.items()
+        },
     }
     save_seen_data(seen_payload)
 

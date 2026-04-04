@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 @dataclass
@@ -14,7 +14,7 @@ class ChannelCheckResult:
     channel_id: str
     channel_title: str
     new_items: list[dict[str, Any]]
-    updated_channel_state: dict[str, Any]
+    updated_channel_state: ChannelState
     error: dict[str, str] | None = None
 
 @dataclass
@@ -25,3 +25,9 @@ class RunSummary:
     items: list[dict[str, Any]]
     errors: list[dict[str, str]]
     used_legacy_dict: bool
+
+@dataclass
+class ChannelState:
+    channel_title: str
+    urls: list[str] = field(default_factory=list)
+    last_checked: str | None = None
