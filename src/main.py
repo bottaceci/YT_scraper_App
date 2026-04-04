@@ -8,6 +8,7 @@ from typing import Any
 import flet as ft
 
 import scraper
+from scraper import RunSummary
 import storage
 from channels import CHANNELS
 
@@ -172,10 +173,10 @@ def main(page: ft.Page) -> None:
                 )
             )
 
-    def show_current_results(summary: dict[str, Any]) -> None:
+    def show_current_results(summary: RunSummary) -> None:
         current_results.controls.clear()
 
-        new_items = summary.get("items", [])
+        new_items = summary.items
         if not new_items:
             current_results.controls.append(ft.Text("No new videos found in this run."))
             return
@@ -246,11 +247,11 @@ def main(page: ft.Page) -> None:
             return
 
         show_current_results(summary)
-        show_errors(summary.get("errors", []))
+        show_errors(summary.errors)
         load_history_view()
 
-        new_count = summary.get("new_count", 0)
-        error_count = len(summary.get("errors", []))
+        new_count = summary.new_count
+        error_count = len(summary.errors)
 
         status_parts = []
         if new_count:
@@ -261,13 +262,13 @@ def main(page: ft.Page) -> None:
         if error_count:
             status_parts.append(f"{error_count} feed warning(s).")
 
-        if summary.get("used_legacy_dict"):
+        if summary.used_legacy_dict:
             status_parts.append("Imported your old dict.txt format for comparison on this run.")
 
         summary_text.value = (
-            f"Last check: {format_timestamp(summary.get('checked_at'))} | "
-            f"Channels checked: {summary.get('channel_count', 0)} | "
-            f"New videos: {summary.get('new_count', 0)} | "
+            f"Last check: {format_timestamp(summary.checked_at)} | "
+            f"Channels checked: {summary.channel_count} | "
+            f"New videos: {summary.new_count} | "
             f"Warnings: {error_count}"
         )
 

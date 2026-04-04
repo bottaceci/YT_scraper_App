@@ -33,6 +33,15 @@ class ChannelCheckResult:
     updated_channel_state: dict[str, Any]
     error: dict[str, str] | None = None
 
+@dataclass
+class RunSummary:
+    checked_at: str
+    channel_count: int
+    new_count: int
+    items: list[dict[str, Any]]
+    errors: list[dict[str, str]]
+    used_legacy_dict: bool
+
 
 def _now_iso() -> str:
     return datetime.now().astimezone().isoformat()
@@ -94,7 +103,7 @@ def process_channel(
     seen_channels: dict[str, Any],
     legacy_seen_by_title: dict[str, list[str]],
     checked_at: str,
-) -> dict[str, Any]:
+) -> ChannelCheckResult:
     channel_id, fallback_label = validate_channel_config(channel)
 
     previous_channel_state = seen_channels.get(channel_id, {})
@@ -154,7 +163,7 @@ def finalize_run(
     checked_at: str,
     channel_count: int,
     used_legacy_dict: bool,
-) -> dict[str, Any]:
+) -> RunSummary:
     new_items.sort(key=lambda item: (item["channel_title"].lower(), item["title"].lower()))
 
     seen_payload = {
@@ -162,15 +171,6 @@ def finalize_run(
         "channels": updated_channels,
     }
     save_seen_data(seen_payload)
-
-    run_summary = {
-        "checked_at": checked_at,
-        "channel_count": channel_count,
-        "new_count": len(new_items),
-        "items": new_items,
-        "errors": errors,
-        "used_legacy_dict": used_legacy_dict,
-    }
 
     if new_items:
         record_successful_run(
@@ -181,4 +181,11 @@ def finalize_run(
             }
         )
 
-    return run_summary
+    return RunSummary(
+        checked_at=checked_at,
+        channel_count=channel_count,
+        new_count=len(new_items),
+        items=new_items,
+        errors=errors,
+        used_legacy_dict=used_legacy_dict,
+    )
