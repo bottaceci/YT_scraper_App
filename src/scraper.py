@@ -37,6 +37,17 @@ class ChannelCheckResult:
 def _now_iso() -> str:
     return datetime.now().astimezone().isoformat()
 
+def validate_channel_config(channel: dict[str, Any]) -> tuple[str,str]:
+    channel_id = str(channel.get("id", "")).strip()
+    label = str(channel.get("label", "")).strip()
+
+    if not channel_id:
+        raise ValueError("Channel is missing a valid 'id'.")
+    if not label:
+        raise ValueError("Channel is missing a valid 'label'.")
+    
+    return channel_id, label
+
 
 def parse_channel(channel_id: str, fallback_label: str) -> tuple[str, list[VideoItem], str | None]:
     url = ROOT + channel_id
@@ -84,8 +95,7 @@ def process_channel(
     legacy_seen_by_title: dict[str, list[str]],
     checked_at: str,
 ) -> dict[str, Any]:
-    channel_id = channel["id"]
-    fallback_label = channel["label"]
+    channel_id, fallback_label = validate_channel_config(channel)
 
     previous_channel_state = seen_channels.get(channel_id, {})
 
