@@ -104,6 +104,33 @@ def main(page: ft.Page) -> None:
     errors_column = ft.Column(spacing=8)
     channels = channel_store.list_channels()
 
+    channels_list = ft.Column(spacing=10)
+
+    show_add_channel_button = ft.FilledButton(
+        content="Add channel",
+        icon=ft.Icons.ADD,
+    )
+
+    new_channel_id_field = ft.TextField(
+        label="YouTube channel ID",
+        hint_text="Paste the channel ID here",
+        visible=False,
+        expand=True,
+    )
+
+    confirm_add_channel_button = ft.FilledButton(
+        content="Save",
+        icon=ft.Icons.SAVE,
+        visible=False,
+    )
+
+    cancel_add_channel_button = ft.TextButton(
+        content="Cancel",
+        visible=False,
+    )
+
+    channel_status_text = ft.Text("")
+
     status_text = ft.Text("Ready to check feeds.")
     summary_text = ft.Text(f"Watching {len(channels)} channels.")
     data_dir_text = ft.Text(
@@ -189,6 +216,85 @@ def main(page: ft.Page) -> None:
         for channel_title in sorted(grouped.keys(), key=str.lower):
             current_results.controls.append(build_channel_group(channel_title, grouped[channel_title]))
 
+    def set_add_channel_mode(is_visible: bool) -> None:
+        new_channel_id_field.visible = is_visible
+        confirm_add_channel_button.visible = is_visible
+        cancel_add_channel_button.visible = is_visible
+
+        if not is_visible:
+            new_channel_id_field.value = ""
+            channel_status_text.value = ""
+
+        page.update()
+
+
+    def open_add_channel_form(e: ft.ControlEvent) -> None:
+        set_add_channel_mode(True)
+
+
+    def cancel_add_channel_form(e: ft.ControlEvent) -> None:
+        set_add_channel_mode(False)
+
+
+    def load_channels_view() -> None:
+        channels_list.controls.clear()
+
+        channels = channel_store.list_channels()
+
+        if not channels:
+            channels_list.controls.append(ft.Text("No channels configured yet."))
+            page.update()
+            return
+
+        for channel in channels:
+            channels_list.controls.append(
+                ft.Card(
+                    content=ft.Container(
+                        padding=10,
+                        content=ft.Row(
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                            controls=[
+                                ft.Column(
+                                    spacing=2,
+                                    controls=[
+                                        ft.Text(channel.label, weight=ft.FontWeight.W_600),
+                                        ft.Text(
+                                            channel.channel_id,
+                                            size=12,
+                                            color=ft.Colors.BLUE_GREY_400,
+                                        ),
+                                    ],
+                                ),
+                                ft.IconButton(
+                                    icon=ft.Icons.DELETE_OUTLINE,
+                                    tooltip="Remove channel",
+                                    on_click=lambda e, channel_id=channel.channel_id: delete_channel(channel_id),
+                                ),
+                            ],
+                        ),
+                    )
+                )
+            )
+
+        page.update()
+
+    def refresh_channel_cache() -> None:
+        nonlocal channels
+        channels = channel_store.list_channels()
+
+    def delete_channel(channel_id: str) -> None:
+        try:
+            channel_store.remove_channel(channel_id)
+        except Exception as exc:
+            channel_status_text.value = f"Could not remove channel: {exc}"
+            page.update()
+            return
+
+        refresh_channel_cache()
+        load_channels_view()
+        channel_status_text.value = "Channel removed successfully."
+        page.update()
+    
     async def refresh_feeds(e: ft.ControlEvent) -> None:
         set_loading(True, "Checking feeds...")
 
@@ -275,13 +381,61 @@ def main(page: ft.Page) -> None:
 
         set_loading(False, " ".join(status_parts))
 
+    async def save_new_channel(e: ft.ControlEvent) -> None:
+        raw_channel_id = (new_channel_id_field.value or "").strip()
+
+        if not raw_channel_id:
+            channel_status_text.value = "Please enter a channel ID."
+            page.update()
+            return
+
+        confirm_add_channel_button.disabled = True
+        cancel_add_channel_button.disabled = True
+        show_add_channel_button.disabled = True
+        new_channel_id_field.disabled = True
+        channel_status_text.value = "Resolving channel..."
+        page.update()
+
+        try:
+            await asyncio.to_thread(channel_store.add_channel_by_id, raw_channel_id)
+        except Exception as exc:
+            channel_status_text.value = f"Could not add channel: {exc}"
+            confirm_add_channel_button.disabled = False
+            cancel_add_channel_button.disabled = False
+            show_add_channel_button.disabled = False
+            new_channel_id_field.disabled = False
+            page.update()
+            return
+
+        refresh_channel_cache()
+        load_channels_view()
+        set_add_channel_mode(False)
+
+        confirm_add_channel_button.disabled = False
+        cancel_add_channel_button.disabled = False
+        show_add_channel_button.disabled = False
+        new_channel_id_field.disabled = False
+
+        channel_status_text.value = "Channel added successfully. Creating baseline..."
+        page.update()
+
+        await refresh_feeds(e)
+
+        channel_status_text.value = "Channel added successfully."
+        page.update()
+
     refresh_button.on_click = refresh_feeds
+    show_add_channel_button.on_click = open_add_channel_form
+    cancel_add_channel_button.on_click = cancel_add_channel_form
+    confirm_add_channel_button.on_click = save_new_channel
 
     current_results.controls.append(ft.Text("Click 'Check feeds now' to run the scraper."))
     load_history_view()
+    load_channels_view()
 
-    page.add(
-        ft.Column(
+    watch_tab_content = ft.Container(
+        padding=10,
+        content=ft.Column(
             spacing=18,
             controls=[
                 ft.Text("Channel Watcher", size=28, weight=ft.FontWeight.BOLD),
@@ -300,6 +454,58 @@ def main(page: ft.Page) -> None:
                 ft.Text("Recent successful runs (last 5)", size=22, weight=ft.FontWeight.W_600),
                 history_results,
             ],
+        )
+    )
+
+    channels_tab_content = ft.Container(
+        padding=10,
+        content=ft.Column(
+            spacing=18,
+            controls=[
+                ft.Text("Channels", size=28, weight=ft.FontWeight.BOLD),
+                ft.Text("Manage the list of YouTube channels tracked by the app."),
+                show_add_channel_button,
+                ft.Row(
+                    controls=[
+                        new_channel_id_field,
+                        confirm_add_channel_button,
+                        cancel_add_channel_button,
+                    ]
+                ),
+                channel_status_text,
+                ft.Divider(),
+                channels_list,
+            ],
+        ),
+    )
+
+    page.add(
+        ft.Tabs(
+            length=2,
+            selected_index=0,
+            animation_duration=200,
+            content=ft.Column(
+                expand=True,
+                controls=[
+                    ft.TabBar(
+                        tabs=[
+                            ft.Tab(label="Watch", icon=ft.Icons.VIDEO_LIBRARY_OUTLINED),
+                            ft.Tab(label="Channels", icon=ft.Icons.LIST_ALT_OUTLINED),
+                        ]
+                    ),
+                    ft.Container(
+                        expand=True,
+                        content=ft.TabBarView(
+                            expand=True,
+                            controls=[
+                                watch_tab_content,
+                                channels_tab_content,
+                            ],
+                        ),
+                    ),
+                ],
+            ),
+            expand=1,
         )
     )
 

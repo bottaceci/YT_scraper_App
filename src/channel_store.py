@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 
 import storage
+import scraper
 from models import ChannelConfig
 
 DB_FILENAME = "channel_watcher.db"
@@ -64,15 +65,23 @@ def add_channel(channel: ChannelConfig) -> None:
 
     init_db()
 
-    with get_connection() as conn:
-        conn.execute(
-            """
-            INSERT INTO channels (channel_id, label)
-            VALUES (?, ?)
-            """,
-            (channel_id, label),
-        )
-        conn.commit()
+    try:
+        with get_connection() as conn:
+            conn.execute(
+                """
+                INSERT INTO channels (channel_id, label)
+                VALUES (?, ?)
+                """,
+                (channel_id, label),
+            )
+            conn.commit()
+    except sqlite3.IntegrityError as exc:
+        raise ValueError(f"Channel already exists: {channel_id}") from exc
+
+def add_channel_by_id(channel_id: str) -> ChannelConfig:
+    resolved_channel = scraper.resolve_channel(channel_id)
+    add_channel(resolved_channel)
+    return resolved_channel
 
 
 def remove_channel(channel_id: str) -> None:

@@ -39,6 +39,26 @@ def validate_channel_config(channel: ChannelConfig) -> tuple[str,str]:
     
     return channel_id, label
 
+def resolve_channel(channel_id: str) -> ChannelConfig:
+    normalized_channel_id = channel_id.strip()
+    if not normalized_channel_id:
+        raise ValueError("Channel ID cannot be empty.")
+
+    channel_title, items, error_message = parse_channel(
+        normalized_channel_id,
+        normalized_channel_id,
+    )
+
+    if error_message:
+        raise ValueError(f"Could not load channel feed: {error_message}")
+
+    if not channel_title or channel_title.strip() == normalized_channel_id:
+        raise ValueError("Could not resolve the channel title from the feed.")
+
+    return ChannelConfig(
+        channel_id=normalized_channel_id,
+        label=channel_title.strip(),
+    )
 
 def parse_channel(channel_id: str, fallback_label: str) -> tuple[str, list[VideoItem], str | None]:
     url = ROOT + channel_id
