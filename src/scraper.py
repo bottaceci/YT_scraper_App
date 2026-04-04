@@ -16,7 +16,8 @@ from models import (
     VideoItem,
     ChannelCheckResult,
     RunSummary,
-    ChannelState
+    ChannelState,
+    SuccessfulRun
 )
 
 
@@ -164,11 +165,11 @@ def finalize_run(
 
     if new_items:
         record_successful_run(
-            {
-                "checked_at": checked_at,
-                "new_count": len(new_items),
-                "items": new_items,
-            }
+            SuccessfulRun(
+                checked_at=checked_at,
+                new_count=len(new_items),
+                items=new_items,
+            )
         )
 
     return RunSummary(

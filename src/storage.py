@@ -4,7 +4,10 @@ import json
 import os
 from pathlib import Path
 from typing import Any
+from dataclasses import asdict
 import sys
+
+from models import SuccessfulRun
 
 APP_DIR_NAME = "channel-watcher"
 SEEN_FILENAME = "seen_videos.json"
@@ -69,13 +72,13 @@ def save_history_data(payload: dict[str, Any]) -> None:
     _write_json(get_history_file(), payload)
 
 
-def record_successful_run(run_payload: dict[str, Any]) -> None:
+def record_successful_run(run_payload: SuccessfulRun) -> None:
     if not run_payload.get("items"):
         return
 
     history = load_history_data()
     runs = history.get("runs", [])
-    runs.insert(0, run_payload)
+    runs.insert(0, asdict(run_payload))
     history["runs"] = runs[:HISTORY_LIMIT]
     save_history_data(history)
 

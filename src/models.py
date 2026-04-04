@@ -31,3 +31,9 @@ class ChannelState:
     channel_title: str
     urls: list[str] = field(default_factory=list)
     last_checked: str | None = None
+
+@dataclass
+class SuccessfulRun:
+    checked_at: str
+    new_count: int
+    items: list[dict[str, Any]] = field(default_factory=list)
