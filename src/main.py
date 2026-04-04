@@ -8,7 +8,7 @@ from typing import Any
 import flet as ft
 
 import scraper
-from scraper import RunSummary
+from models import RunSummary
 import storage
 from channels import CHANNELS
 
