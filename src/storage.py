@@ -73,7 +73,7 @@ def save_history_data(payload: dict[str, Any]) -> None:
 
 
 def record_successful_run(run_payload: SuccessfulRun) -> None:
-    if not run_payload.get("items"):
+    if not run_payload.items:
         return
 
     history = load_history_data()

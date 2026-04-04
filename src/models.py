@@ -37,3 +37,8 @@ class SuccessfulRun:
     checked_at: str
     new_count: int
     items: list[dict[str, Any]] = field(default_factory=list)
+
+@dataclass
+class ChannelConfig:
+    channel_id: str
+    label: str

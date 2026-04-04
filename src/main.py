@@ -10,7 +10,7 @@ import flet as ft
 import scraper
 from models import RunSummary, ChannelState
 import storage
-from channels import CHANNELS
+import channel_store
 
 
 def format_timestamp(value: str | None) -> str:
@@ -102,9 +102,10 @@ def main(page: ft.Page) -> None:
     current_results = ft.Column(spacing=14)
     history_results = ft.Column(spacing=12)
     errors_column = ft.Column(spacing=8)
+    channels = channel_store.list_channels()
 
     status_text = ft.Text("Ready to check feeds.")
-    summary_text = ft.Text(f"Watching {len(CHANNELS)} channels.")
+    summary_text = ft.Text(f"Watching {len(channels)} channels.")
     data_dir_text = ft.Text(
         f"Data folder: {storage.get_data_dir()}",
         size=12,
@@ -202,12 +203,12 @@ def main(page: ft.Page) -> None:
             legacy_seen_by_title = run_context["legacy_seen_by_title"]
             checked_at = run_context["checked_at"]
 
-            total_channels = len(CHANNELS)
+            total_channels = len(channels)
             updated_channels: dict[str, ChannelState] = {}
             new_items: list[dict[str, Any]] = []
             errors: list[dict[str, str]] = []
 
-            for index, channel in enumerate(CHANNELS, start=1):
+            for index, channel in enumerate(channels, start=1):
                 result = await asyncio.to_thread(
                     scraper.process_channel,
                     channel,
@@ -237,7 +238,7 @@ def main(page: ft.Page) -> None:
             )
 
         except Exception as exc:
-            summary_text.value = f"Watching {len(CHANNELS)} channels."
+            summary_text.value = f"Watching {len(channels)} channels."
             errors_column.controls.clear()
             current_results.controls.clear()
             current_results.controls.append(

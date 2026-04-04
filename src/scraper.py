@@ -17,7 +17,8 @@ from models import (
     ChannelCheckResult,
     RunSummary,
     ChannelState,
-    SuccessfulRun
+    SuccessfulRun,
+    ChannelConfig
 )
 
 
@@ -27,9 +28,9 @@ ROOT = "https://www.youtube.com/feeds/videos.xml?channel_id="
 def _now_iso() -> str:
     return datetime.now().astimezone().isoformat()
 
-def validate_channel_config(channel: dict[str, Any]) -> tuple[str,str]:
-    channel_id = str(channel.get("id", "")).strip()
-    label = str(channel.get("label", "")).strip()
+def validate_channel_config(channel: ChannelConfig) -> tuple[str,str]:
+    channel_id = channel.channel_id.strip()
+    label = channel.label.strip()
 
     if not channel_id:
         raise ValueError("Channel is missing a valid 'id'.")
@@ -86,7 +87,7 @@ def load_channel_state(raw_state: dict[str, Any], fallback_title: str) -> Channe
     )
 
 def process_channel(
-    channel: dict[str, str],
+    channel: ChannelConfig,
     seen_channels: dict[str, Any],
     legacy_seen_by_title: dict[str, list[str]],
     checked_at: str,
