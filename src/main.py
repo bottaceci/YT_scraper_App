@@ -4,14 +4,10 @@ import flet as ft
 
 from ui.channels_tab import ChannelsTab
 from ui.watch_tab import WatchTab
+from ui.theme import apply_page_theme
 
 def main(page: ft.Page) -> None:
-    page.title = "Channel Watcher"
-    page.theme_mode = ft.ThemeMode.DARK
-    page.padding = 20
-    page.window.width = 1100
-    page.window.height = 800
-    page.scroll = ft.ScrollMode.AUTO
+    apply_page_theme(page)
 
     watch_tab = WatchTab(page)
     channels_tab = ChannelsTab(

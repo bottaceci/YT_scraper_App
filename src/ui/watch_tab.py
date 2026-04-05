@@ -9,23 +9,40 @@ import channel_store
 import scraper
 import storage
 from models import ChannelState, RunSummary
-from ui.components import build_current_results, build_history_block, format_timestamp
+from ui.components import (
+    build_current_results,
+    build_history_block,
+    build_page_header,
+    build_section_header,
+    format_timestamp,
+)
+from ui.theme import (
+    SECTION_PADDING,
+    SPACE_SM,
+    SPACE_MD,
+    SPACE_LG,
+    TEXT_XS,
+    TEXT_MD,
+    TEXT_LG,
+    TEXT_XL,
+    TEXT_MUTED_COLOR,
+)
 
 
 class WatchTab:
     def __init__(self, page: ft.Page) -> None:
         self.page = page
 
-        self.current_results = ft.Column(spacing=14)
-        self.history_results = ft.Column(spacing=12)
-        self.errors_column = ft.Column(spacing=8)
+        self.current_results = ft.Column(spacing=SPACE_MD)
+        self.history_results = ft.Column(spacing=SPACE_SM)
+        self.errors_column = ft.Column(spacing=SPACE_SM)
 
         self.status_text = ft.Text("Ready to check feeds.")
         self.summary_text = ft.Text(f"Watching {len(self.get_channels())} channels.")
         self.data_dir_text = ft.Text(
             f"Data folder: {storage.get_data_dir()}",
-            size=12,
-            color=ft.Colors.BLUE_GREY_400,
+            size=TEXT_XS,
+            color=TEXT_MUTED_COLOR,
         )
 
         self.refresh_button = ft.FilledButton(
@@ -35,30 +52,32 @@ class WatchTab:
         )
 
         self.progress_bar = ft.ProgressBar(width=500, value=0, visible=False)
-        self.progress_text = ft.Text("", size=12, color=ft.Colors.BLUE_GREY_400, visible=False)
+        self.progress_text = ft.Text("", size=TEXT_XS, color=TEXT_MUTED_COLOR, visible=False)
 
         self.current_results.controls.append(ft.Text("Click 'Check feeds now' to run the scraper."))
         self.load_history_view()
 
         self._content = ft.Container(
-            padding=10,
+            padding=SECTION_PADDING,
             content=ft.Column(
-                spacing=18,
+                spacing=SPACE_LG,
                 controls=[
-                    ft.Text("Channel Watcher", size=28, weight=ft.FontWeight.BOLD),
-                    ft.Text("Minimal Flet app for checking new videos across your saved channel list."),
+                    build_page_header(
+                        title="Channel Watcher",
+                        subtitle="Check new uploads across your saved YouTube channels.",
+                    ),
                     self.data_dir_text,
-                    ft.Row(spacing=12, controls=[self.refresh_button]),
+                    ft.Row(spacing=SPACE_SM, controls=[self.refresh_button]),
                     self.progress_bar,
                     self.progress_text,
                     self.status_text,
                     self.summary_text,
                     ft.Divider(),
-                    ft.Text("This run", size=22, weight=ft.FontWeight.W_600),
+                    build_section_header("This run"),
                     self.current_results,
                     self.errors_column,
                     ft.Divider(),
-                    ft.Text("Recent successful runs (last 5)", size=22, weight=ft.FontWeight.W_600),
+                    build_section_header("Recent successful runs (last 5)"),
                     self.history_results,
                 ],
             ),
@@ -110,14 +129,14 @@ class WatchTab:
             return
 
         self.errors_column.controls.append(
-            ft.Text("Feed warnings", size=18, weight=ft.FontWeight.W_600)
+            build_section_header("Feed warnings")
         )
 
         for error in errors:
             self.errors_column.controls.append(
                 ft.Card(
                     content=ft.Container(
-                        padding=10,
+                        padding=SECTION_PADDING,
                         content=ft.Column(
                             spacing=4,
                             controls=[

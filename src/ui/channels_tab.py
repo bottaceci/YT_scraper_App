@@ -6,6 +6,15 @@ from collections.abc import Awaitable, Callable
 import flet as ft
 
 import channel_store
+from ui.theme import (
+    SECTION_PADDING,
+    SPACE_SM,
+    SPACE_LG,
+    TEXT_XS,
+    TEXT_XL,
+    TEXT_MUTED_COLOR,
+)
+from ui.components import build_page_header
 
 
 class ChannelsTab:
@@ -19,7 +28,7 @@ class ChannelsTab:
         self.on_channels_changed = on_channels_changed
         self.on_channel_added = on_channel_added
 
-        self.channels_list = ft.Column(spacing=10)
+        self.channels_list = ft.Column(spacing=SPACE_SM)
 
         self.show_add_channel_button = ft.FilledButton(
             content="Add channel",
@@ -50,12 +59,14 @@ class ChannelsTab:
         self.channel_status_text = ft.Text("")
 
         self._content = ft.Container(
-            padding=10,
+            padding=SECTION_PADDING,
             content=ft.Column(
-                spacing=18,
+                spacing=SPACE_LG,
                 controls=[
-                    ft.Text("Channels", size=28, weight=ft.FontWeight.BOLD),
-                    ft.Text("Manage the list of YouTube channels tracked by the app."),
+                    build_page_header(
+                        title="Channels",
+                        subtitle="Manage the YouTube channels tracked by the app.",
+                    ),
                     self.show_add_channel_button,
                     ft.Row(
                         controls=[
@@ -110,7 +121,7 @@ class ChannelsTab:
             self.channels_list.controls.append(
                 ft.Card(
                     content=ft.Container(
-                        padding=10,
+                        padding=SECTION_PADDING,
                         content=ft.Row(
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                             controls=[
@@ -120,8 +131,8 @@ class ChannelsTab:
                                         ft.Text(channel.label, weight=ft.FontWeight.W_600),
                                         ft.Text(
                                             channel.channel_id,
-                                            size=12,
-                                            color=ft.Colors.BLUE_GREY_400,
+                                            size=TEXT_XS,
+                                            color=TEXT_MUTED_COLOR,
                                         ),
                                     ],
                                 ),
