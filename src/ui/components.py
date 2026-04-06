@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import flet as ft
 
@@ -165,27 +166,58 @@ def build_video_card(item: dict[str, Any]) -> ft.Control:
     if item.get("published"):
         subtitle_parts.append(item["published"])
 
+    thumbnail_url = get_youtube_thumbnail_url(item.get("url", ""))
+
+    thumbnail: ft.Control
+    if thumbnail_url:
+        thumbnail = ft.Image(
+            src=thumbnail_url,
+            width=180,
+            height=100,
+            fit=ft.BoxFit.COVER,
+            border_radius=8,
+        )
+    else:
+        thumbnail = ft.Container(
+            width=180,
+            height=100,
+            border_radius=8,
+            bgcolor=ft.Colors.with_opacity(0.05, ft.Colors.WHITE),
+            alignment=ft.alignment.center,
+            content=ft.Icon(ft.Icons.IMAGE_NOT_SUPPORTED_OUTLINED, color=TEXT_MUTED_COLOR),
+        )
+
+    text_block = ft.Column(
+        expand=True,
+        spacing=SPACE_SM,
+        controls=[
+            ft.Text(
+                item.get("title", "Untitled video"),
+                size=TEXT_MD,
+                weight=ft.FontWeight.W_600,
+            ),
+            ft.Text(
+                " • ".join(subtitle_parts),
+                size=TEXT_XS,
+                color=TEXT_MUTED_COLOR,
+            ),
+            ft.TextButton(
+                content="Open video",
+                icon=ft.Icons.OPEN_IN_NEW,
+                url=item.get("url", ""),
+            ),
+        ],
+    )
+
     return ft.Card(
         content=ft.Container(
             padding=CARD_PADDING,
-            content=ft.Column(
-                spacing=SPACE_SM,
+            content=ft.Row(
+                spacing=SPACE_MD,
+                vertical_alignment=ft.CrossAxisAlignment.START,
                 controls=[
-                    ft.Text(
-                        item.get("title", "Untitled video"),
-                        size=TEXT_MD,
-                        weight=ft.FontWeight.W_600,
-                    ),
-                    ft.Text(
-                        " • ".join(subtitle_parts),
-                        size=TEXT_XS,
-                        color=TEXT_MUTED_COLOR,
-                    ),
-                    ft.TextButton(
-                        content="Open video",
-                        icon=ft.Icons.OPEN_IN_NEW,
-                        url=item.get("url", ""),
-                    ),
+                    thumbnail,
+                    text_block,
                 ],
             ),
         )
@@ -310,3 +342,31 @@ def build_status_panel(
             ),
         )
     )
+
+def get_youtube_video_id(url: str) -> str | None:
+    if not url:
+        return None
+
+    parsed = urlparse(url)
+
+    if parsed.netloc in {"youtu.be", "www.youtu.be"}:
+        video_id = parsed.path.strip("/")
+        return video_id or None
+
+    if "youtube.com" in parsed.netloc:
+        query_video_id = parse_qs(parsed.query).get("v")
+        if query_video_id:
+            return query_video_id[0]
+
+        path_parts = [part for part in parsed.path.split("/") if part]
+        if len(path_parts) >= 2 and path_parts[0] in {"embed", "shorts", "live"}:
+            return path_parts[1]
+
+    return None
+
+
+def get_youtube_thumbnail_url(url: str) -> str | None:
+    video_id = get_youtube_video_id(url)
+    if not video_id:
+        return None
+    return f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"

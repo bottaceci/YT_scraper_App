@@ -164,7 +164,14 @@ class ChannelsTab:
                                 ft.Column(
                                     spacing=2,
                                     controls=[
-                                        ft.Text(channel.label, weight=ft.FontWeight.W_600),
+                                        ft.TextButton(
+                                            content=channel.label,
+                                            url=f"https://www.youtube.com/channel/{channel.channel_id}",
+                                            style=ft.ButtonStyle(
+                                                padding=10,
+                                                shape=ft.RoundedRectangleBorder(radius=10),
+                                            ),
+                                        ),
                                         ft.Text(
                                             channel.channel_id,
                                             size=TEXT_XS,
