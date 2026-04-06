@@ -15,11 +15,17 @@ from ui.theme import (
     SPACE_MD,
     SPACE_LG,
     TEXT_XS,
+    TEXT_SM,
     TEXT_MD,
     TEXT_LG,
     TEXT_XL,
     TEXT_MUTED_COLOR,
     TEXT_SOFT_COLOR,
+    SURFACE_COLOR,
+    BORDER_COLOR,
+    DANGER_COLOR,
+    WARNING_COLOR,
+    SUCCESS_COLOR,
 )
 
 def build_page_header(
@@ -60,6 +66,82 @@ def build_page_header(
         content=content,
     )
 
+def build_feedback_block(
+    title: str,
+    message: str,
+    icon: str,
+    accent_color: str,
+) -> ft.Control:
+    return ft.Container(
+        padding=CARD_PADDING,
+        border=ft.Border.all(1, BORDER_COLOR),
+        border_radius=12,
+        content=ft.Row(
+            spacing=12,
+            vertical_alignment=ft.CrossAxisAlignment.START,
+            controls=[
+                ft.Icon(
+                    icon,
+                    size=22,
+                    color=accent_color,
+                ),
+                ft.Column(
+                    expand=True,
+                    spacing=6,
+                    controls=[
+                        ft.Text(
+                            title,
+                            size=TEXT_MD,
+                            weight=ft.FontWeight.W_600,
+                        ),
+                        ft.Text(
+                            message,
+                            size=TEXT_SM,
+                            color=TEXT_SOFT_COLOR,
+                        ),
+                    ],
+                ),
+            ],
+        ),
+    )
+
+def build_warning_block(title: str, message: str) -> ft.Control:
+    return build_feedback_block(
+        title=title,
+        message=message,
+        icon=ft.Icons.WARNING_AMBER_ROUNDED,
+        accent_color=WARNING_COLOR,
+    )
+
+
+def build_error_block(title: str, message: str) -> ft.Control:
+    return build_feedback_block(
+        title=title,
+        message=message,
+        icon=ft.Icons.ERROR_OUTLINE,
+        accent_color=DANGER_COLOR,
+    )
+
+def build_info_block(
+    title: str,
+    message: str,
+    icon: str = ft.Icons.INFO_OUTLINE,
+) -> ft.Control:
+    return build_feedback_block(
+        title=title,
+        message=message,
+        icon=icon,
+        accent_color=TEXT_MUTED_COLOR,
+    )
+
+
+def build_success_block(title: str, message: str) -> ft.Control:
+    return build_feedback_block(
+        title=title,
+        message=message,
+        icon=ft.Icons.CHECK_CIRCLE_OUTLINE,
+        accent_color=SUCCESS_COLOR,
+    )
 
 def build_section_header(title: str) -> ft.Control:
     return ft.Text(
@@ -145,13 +227,13 @@ def build_channel_group(title: str, items: list[dict[str, Any]]) -> ft.Control:
         ],
     )
 
-
 def build_current_results(summary: RunSummary) -> ft.Control:
     new_items = summary.items
     if not new_items:
-        return ft.Column(
-            spacing=SPACE_SM,
-            controls=[ft.Text("No new videos found in this run.")],
+        return build_empty_state(
+            title="No new videos",
+            message="This run completed successfully, but no unseen uploads were found.",
+            icon=ft.Icons.VIDEO_LIBRARY_OUTLINED,
         )
 
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -164,4 +246,67 @@ def build_current_results(summary: RunSummary) -> ft.Control:
             build_channel_group(channel_title, grouped[channel_title])
             for channel_title in sorted(grouped.keys(), key=str.lower)
         ],
+    )
+
+def build_empty_state(
+    title: str,
+    message: str,
+    icon: str | None = None,
+) -> ft.Control:
+    controls: list[ft.Control] = []
+
+    if icon:
+        controls.append(ft.Icon(icon, size=28, color=TEXT_MUTED_COLOR))
+
+    controls.extend(
+        [
+            ft.Text(
+                title,
+                size=TEXT_MD,
+                weight=ft.FontWeight.W_600,
+            ),
+            ft.Text(
+                message,
+                size=TEXT_SM,
+                color=TEXT_SOFT_COLOR,
+            ),
+        ]
+    )
+
+    return ft.Container(
+        padding=CARD_PADDING,
+        border=ft.Border.all(1, BORDER_COLOR),
+        border_radius=12,
+        bgcolor=SURFACE_COLOR,
+        content=ft.Column(
+            spacing=SPACE_SM,
+            controls=controls,
+        ),
+    )
+
+def build_status_panel(
+    primary_action: ft.Control,
+    progress_bar: ft.Control,
+    progress_text: ft.Control,
+    status_text: ft.Control,
+    summary_text: ft.Control,
+) -> ft.Control:
+    return ft.Card(
+        content=ft.Container(
+            padding=CARD_PADDING,
+            content=ft.Column(
+                spacing=SPACE_SM,
+                controls=[
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.START,
+                        controls=[primary_action],
+                    ),
+                    progress_bar,
+                    progress_text,
+                    ft.Divider(height=1),
+                    status_text,
+                    summary_text,
+                ],
+            ),
+        )
     )

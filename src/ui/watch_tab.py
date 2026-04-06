@@ -11,9 +11,13 @@ import storage
 from models import ChannelState, RunSummary
 from ui.components import (
     build_current_results,
+    build_empty_state,
     build_history_block,
     build_page_header,
     build_section_header,
+    build_status_panel,
+    build_warning_block,
+    build_error_block,
     format_timestamp,
 )
 from ui.theme import (
@@ -37,8 +41,17 @@ class WatchTab:
         self.history_results = ft.Column(spacing=SPACE_SM)
         self.errors_column = ft.Column(spacing=SPACE_SM)
 
-        self.status_text = ft.Text("Ready to check feeds.")
-        self.summary_text = ft.Text(f"Watching {len(self.get_channels())} channels.")
+        self.status_text = ft.Text(
+            "Ready to check feeds.",
+            size=TEXT_MD,
+            weight=ft.FontWeight.W_600,
+        )
+
+        self.summary_text = ft.Text(
+            f"Watching {len(self.get_channels())} channels.",
+            size=TEXT_XS,
+            color=TEXT_MUTED_COLOR,
+        )
         self.data_dir_text = ft.Text(
             f"Data folder: {storage.get_data_dir()}",
             size=TEXT_XS,
@@ -54,7 +67,21 @@ class WatchTab:
         self.progress_bar = ft.ProgressBar(width=500, value=0, visible=False)
         self.progress_text = ft.Text("", size=TEXT_XS, color=TEXT_MUTED_COLOR, visible=False)
 
-        self.current_results.controls.append(ft.Text("Click 'Check feeds now' to run the scraper."))
+        self.status_panel = build_status_panel(
+            primary_action=self.refresh_button,
+            progress_bar=self.progress_bar,
+            progress_text=self.progress_text,
+            status_text=self.status_text,
+            summary_text=self.summary_text,
+        )
+        
+        self.current_results.controls.append(
+            build_empty_state(
+                title="Ready to check",
+                message="Run a feed check to see new uploads across your saved channels.",
+                icon=ft.Icons.PLAYLIST_PLAY,
+            )
+        )
         self.load_history_view()
 
         self._content = ft.Container(
@@ -67,11 +94,7 @@ class WatchTab:
                         subtitle="Check new uploads across your saved YouTube channels.",
                     ),
                     self.data_dir_text,
-                    ft.Row(spacing=SPACE_SM, controls=[self.refresh_button]),
-                    self.progress_bar,
-                    self.progress_text,
-                    self.status_text,
-                    self.summary_text,
+                    self.status_panel,
                     ft.Divider(),
                     build_section_header("This run"),
                     self.current_results,
@@ -100,7 +123,7 @@ class WatchTab:
 
         if is_loading:
             self.progress_bar.value = 0
-            self.progress_text.value = "Starting feed check..."
+            self.progress_text.value = "Starting channel check..."
         else:
             self.progress_bar.value = 0
             self.progress_text.value = ""
@@ -116,7 +139,13 @@ class WatchTab:
         runs = history.get("runs", [])
 
         if not runs:
-            self.history_results.controls.append(ft.Text("No successful runs recorded yet."))
+            self.history_results.controls.append(
+                build_empty_state(
+                    title="No run history yet",
+                    message="Successful checks with new videos will appear here.",
+                    icon=ft.Icons.HISTORY,
+                )
+            )
             return
 
         for run in runs:
@@ -133,21 +162,13 @@ class WatchTab:
         )
 
         for error in errors:
+            channel_title = error.get("channel_title", "Unknown channel")
+            message = error.get("error", "Unknown error")
+
             self.errors_column.controls.append(
-                ft.Card(
-                    content=ft.Container(
-                        padding=SECTION_PADDING,
-                        content=ft.Column(
-                            spacing=4,
-                            controls=[
-                                ft.Text(
-                                    error.get("channel_title", "Unknown channel"),
-                                    weight=ft.FontWeight.W_600,
-                                ),
-                                ft.Text(error.get("error", "Unknown error")),
-                            ],
-                        ),
-                    )
+                build_warning_block(
+                    title=channel_title,
+                    message=message,
                 )
             )
 
@@ -161,7 +182,13 @@ class WatchTab:
         self.set_loading(True, "Checking feeds...")
 
         self.current_results.controls.clear()
-        self.current_results.controls.append(ft.Text("Checking channels..."))
+        self.current_results.controls.append(
+            build_empty_state(
+                title="Checking channels",
+                message="Fetching the latest uploads from your saved list.",
+                icon=ft.Icons.SYNC,
+            )
+        )
         self.errors_column.controls.clear()
         self.page.update()
 
@@ -192,7 +219,7 @@ class WatchTab:
                     errors.append(result.error)
 
                 self.progress_bar.value = index / total_channels if total_channels else 0
-                self.progress_text.value = f"Processed {index}/{total_channels}: {result.channel_title}"
+                self.progress_text.value = f"Checked {index}/{total_channels}: {result.channel_title}"
                 self.status_text.value = "Checking feeds..."
                 self.page.update()
 
@@ -210,7 +237,10 @@ class WatchTab:
             self.errors_column.controls.clear()
             self.current_results.controls.clear()
             self.current_results.controls.append(
-                ft.Text("The run failed before results could be loaded.")
+                build_error_block(
+                    title="Run failed",
+                    message="The feed check stopped before results could be displayed.",
+                )
             )
             self.set_loading(False, f"Run failed: {exc}")
             return
