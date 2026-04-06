@@ -13,6 +13,8 @@ from ui.theme import (
     TEXT_XS,
     TEXT_XL,
     TEXT_MUTED_COLOR,
+    PRIMARY_BUTTON_STYLE,
+    SUBTLE_BUTTON_STYLE,
 )
 from ui.components import (
     build_empty_state,
@@ -39,6 +41,7 @@ class ChannelsTab:
         self.show_add_channel_button = ft.FilledButton(
             content="Add channel",
             icon=ft.Icons.ADD,
+            style=PRIMARY_BUTTON_STYLE,
             on_click=self.open_add_channel_form,
         )
 
@@ -52,12 +55,14 @@ class ChannelsTab:
         self.confirm_add_channel_button = ft.FilledButton(
             content="Save",
             icon=ft.Icons.SAVE,
+            style=PRIMARY_BUTTON_STYLE,
             visible=False,
             on_click=self.save_new_channel,
         )
 
         self.cancel_add_channel_button = ft.TextButton(
             content="Cancel",
+            style=SUBTLE_BUTTON_STYLE,
             visible=False,
             on_click=self.cancel_add_channel_form,
         )
@@ -91,19 +96,32 @@ class ChannelsTab:
         self.channel_feedback = ft.Column(spacing=SPACE_SM)
 
         self._content = ft.Container(
+            expand=True,
             padding=SECTION_PADDING,
             content=ft.Column(
+                expand=True,
                 spacing=SPACE_LG,
+                scroll=ft.Scrollbar(
+                    thumb_visibility=True,
+                ),
                 controls=[
-                    build_page_header(
-                        title="Channels",
-                        subtitle="Manage the YouTube channels tracked by the app.",
+                    ft.Container(
+                        padding=ft.Padding.only(right=16),
+                        content=ft.Column(
+                            spacing=SPACE_LG,
+                            controls=[
+                                build_page_header(
+                                    title="Channels",
+                                    subtitle="Manage the YouTube channels tracked by the app.",
+                                ),
+                                self.show_add_channel_button,
+                                self.add_channel_form,
+                                self.channel_feedback,
+                                ft.Divider(),
+                                self.channels_list,
+                            ],
+                        ),
                     ),
-                    self.show_add_channel_button,
-                    self.add_channel_form,
-                    self.channel_feedback,
-                    ft.Divider(),
-                    self.channels_list,
                 ],
             ),
         )

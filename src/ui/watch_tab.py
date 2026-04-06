@@ -30,6 +30,8 @@ from ui.theme import (
     TEXT_LG,
     TEXT_XL,
     TEXT_MUTED_COLOR,
+    PRIMARY_BUTTON_STYLE,
+    SUBTLE_BUTTON_STYLE,
 )
 
 
@@ -61,6 +63,7 @@ class WatchTab:
         self.refresh_button = ft.FilledButton(
             content="Check feeds now",
             icon=ft.Icons.REFRESH,
+            style=PRIMARY_BUTTON_STYLE,
             on_click=self.refresh_feeds,
         )
 
@@ -85,23 +88,36 @@ class WatchTab:
         self.load_history_view()
 
         self._content = ft.Container(
+            expand=True,
             padding=SECTION_PADDING,
             content=ft.Column(
+                expand=True,
                 spacing=SPACE_LG,
+                scroll=ft.Scrollbar(
+                    thumb_visibility=True
+                ),
                 controls=[
-                    build_page_header(
-                        title="Channel Watcher",
-                        subtitle="Check new uploads across your saved YouTube channels.",
+                    ft.Container(
+                        padding=ft.Padding.only(right=16),
+                        content=ft.Column(
+                            spacing=SPACE_LG,
+                            controls=[
+                                build_page_header(
+                                    title="Channel Watcher",
+                                    subtitle="Check new uploads across your saved YouTube channels.",
+                                ),
+                                self.data_dir_text,
+                                self.status_panel,
+                                ft.Divider(),
+                                build_section_header("This run"),
+                                self.current_results,
+                                self.errors_column,
+                                ft.Divider(),
+                                build_section_header("Recent successful runs (last 5)"),
+                                self.history_results,
+                            ],
+                        ),
                     ),
-                    self.data_dir_text,
-                    self.status_panel,
-                    ft.Divider(),
-                    build_section_header("This run"),
-                    self.current_results,
-                    self.errors_column,
-                    ft.Divider(),
-                    build_section_header("Recent successful runs (last 5)"),
-                    self.history_results,
                 ],
             ),
         )

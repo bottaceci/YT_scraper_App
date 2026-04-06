@@ -32,26 +32,45 @@ TEXT_XL = 46
 CARD_PADDING = 12
 SECTION_PADDING = 10
 
-TEXT_MUTED_COLOR = ft.Colors.BLUE_GREY_400
-TEXT_SOFT_COLOR = ft.Colors.BLUE_GREY_300
+BG_COLOR = "#0b1020"
+SURFACE_COLOR = "#121a2b"
+SURFACE_ELEVATED_COLOR = "#182235"
+BORDER_COLOR = "#27324a"
 
-SURFACE_COLOR = ft.Colors.with_opacity(0.03, ft.Colors.WHITE)
-SURFACE_ELEVATED_COLOR = ft.Colors.with_opacity(0.05, ft.Colors.WHITE)
-BORDER_COLOR = ft.Colors.with_opacity(0.08, ft.Colors.WHITE)
+TEXT_COLOR = "#f3f7ff"
+TEXT_MUTED_COLOR = "#8fa3bf"
+TEXT_SOFT_COLOR = "#b8c7dc"
 
-SUCCESS_COLOR = ft.Colors.GREEN_300
-WARNING_COLOR = ft.Colors.AMBER_300
-DANGER_COLOR = ft.Colors.RED_300
+ACCENT_COLOR = "#37f3c8"
+ACCENT_STRONG_COLOR = "#19c7ff"
+
+SUCCESS_COLOR = "#57e389"
+WARNING_COLOR = "#ffb84d"
+DANGER_COLOR = "#ff6b81"
 
 FONT_BODY = "Inter"
 FONT_DISPLAY = "PixelifySans"
+
+PRIMARY_BUTTON_STYLE = ft.ButtonStyle(
+    bgcolor=ACCENT_COLOR,
+    color=BG_COLOR,
+    padding=ft.Padding.symmetric(horizontal=18, vertical=14),
+    shape=ft.RoundedRectangleBorder(radius=12),
+)
+
+SUBTLE_BUTTON_STYLE = ft.ButtonStyle(
+    color=ACCENT_STRONG_COLOR,
+    padding=ft.Padding.symmetric(horizontal=14, vertical=12),
+    shape=ft.RoundedRectangleBorder(radius=12),
+)
 
 
 def apply_page_theme(page: ft.Page) -> None:
     page.title = APP_TITLE
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = PAGE_PADDING
-    page.scroll = ft.ScrollMode.AUTO
+    #page.scroll = ft.ScrollMode.HIDDEN
+    page.bgcolor = BG_COLOR
 
     page.window.width = WINDOW_WIDTH
     page.window.height = WINDOW_HEIGHT
@@ -66,13 +85,26 @@ def apply_page_theme(page: ft.Page) -> None:
     }
 
     page.theme = ft.Theme(
-        color_scheme_seed=ft.Colors.BLUE,
+        color_scheme=ft.ColorScheme(
+            primary=ACCENT_COLOR,
+            secondary=ACCENT_STRONG_COLOR,
+            surface=SURFACE_COLOR,
+            error=DANGER_COLOR,
+            on_primary=BG_COLOR,
+            on_secondary=BG_COLOR,
+            on_surface=TEXT_COLOR,
+            on_error=TEXT_COLOR,
+        ),
         font_family=FONT_BODY,
         visual_density=ft.VisualDensity.COMPACT,
+        scaffold_bgcolor=BG_COLOR,
         card_theme=ft.CardTheme(
             color=SURFACE_ELEVATED_COLOR,
             margin=0,
             shape=ft.RoundedRectangleBorder(radius=RADIUS_MD),
         ),
-        divider_theme=ft.DividerTheme(color=BORDER_COLOR, thickness=1),
+        divider_theme=ft.DividerTheme(
+            color=BORDER_COLOR, 
+            thickness=1,
+        ),
     )

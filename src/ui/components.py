@@ -27,6 +27,9 @@ from ui.theme import (
     DANGER_COLOR,
     WARNING_COLOR,
     SUCCESS_COLOR,
+    ACCENT_COLOR,
+    ACCENT_STRONG_COLOR,
+    TEXT_COLOR,
 )
 
 def build_page_header(
@@ -41,6 +44,7 @@ def build_page_header(
                 title,
                 size=TEXT_XL,
                 font_family=FONT_DISPLAY,
+                color=ACCENT_COLOR,
             ),
             ft.Text(
                 subtitle,
@@ -72,11 +76,13 @@ def build_feedback_block(
     message: str,
     icon: str,
     accent_color: str,
+    bgcolor: str | None = None,
 ) -> ft.Control:
     return ft.Container(
         padding=CARD_PADDING,
         border=ft.Border.all(1, BORDER_COLOR),
         border_radius=12,
+        bgcolor=bgcolor or SURFACE_COLOR,
         content=ft.Row(
             spacing=12,
             vertical_alignment=ft.CrossAxisAlignment.START,
@@ -106,23 +112,6 @@ def build_feedback_block(
         ),
     )
 
-def build_warning_block(title: str, message: str) -> ft.Control:
-    return build_feedback_block(
-        title=title,
-        message=message,
-        icon=ft.Icons.WARNING_AMBER_ROUNDED,
-        accent_color=WARNING_COLOR,
-    )
-
-
-def build_error_block(title: str, message: str) -> ft.Control:
-    return build_feedback_block(
-        title=title,
-        message=message,
-        icon=ft.Icons.ERROR_OUTLINE,
-        accent_color=DANGER_COLOR,
-    )
-
 def build_info_block(
     title: str,
     message: str,
@@ -133,6 +122,7 @@ def build_info_block(
         message=message,
         icon=icon,
         accent_color=TEXT_MUTED_COLOR,
+        bgcolor=ft.Colors.with_opacity(0.18, ACCENT_STRONG_COLOR),
     )
 
 
@@ -142,6 +132,27 @@ def build_success_block(title: str, message: str) -> ft.Control:
         message=message,
         icon=ft.Icons.CHECK_CIRCLE_OUTLINE,
         accent_color=SUCCESS_COLOR,
+        bgcolor=ft.Colors.with_opacity(0.14, SUCCESS_COLOR),
+    )
+
+
+def build_warning_block(title: str, message: str) -> ft.Control:
+    return build_feedback_block(
+        title=title,
+        message=message,
+        icon=ft.Icons.WARNING_AMBER_ROUNDED,
+        accent_color=WARNING_COLOR,
+        bgcolor=ft.Colors.with_opacity(0.14, WARNING_COLOR),
+    )
+
+
+def build_error_block(title: str, message: str) -> ft.Control:
+    return build_feedback_block(
+        title=title,
+        message=message,
+        icon=ft.Icons.ERROR_OUTLINE,
+        accent_color=DANGER_COLOR,
+        bgcolor=ft.Colors.with_opacity(0.14, DANGER_COLOR),
     )
 
 def build_section_header(title: str) -> ft.Control:
@@ -149,6 +160,7 @@ def build_section_header(title: str) -> ft.Control:
         title,
         size=TEXT_LG,
         font_family=FONT_DISPLAY,
+        color=ACCENT_COLOR,
     )
 
 def format_timestamp(value: str | None) -> str:
@@ -194,6 +206,7 @@ def build_video_card(item: dict[str, Any]) -> ft.Control:
             ft.Text(
                 item.get("title", "Untitled video"),
                 size=TEXT_MD,
+                color=TEXT_COLOR,
                 weight=ft.FontWeight.W_600,
             ),
             ft.Text(

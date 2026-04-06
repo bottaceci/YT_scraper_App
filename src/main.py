@@ -4,7 +4,12 @@ import flet as ft
 
 from ui.channels_tab import ChannelsTab
 from ui.watch_tab import WatchTab
-from ui.theme import apply_page_theme
+from ui.theme import (
+    ACCENT_COLOR,
+    BORDER_COLOR,
+    TEXT_MUTED_COLOR,
+    apply_page_theme,
+)
 
 def main(page: ft.Page) -> None:
     apply_page_theme(page)
@@ -25,6 +30,11 @@ def main(page: ft.Page) -> None:
                 expand=True,
                 controls=[
                     ft.TabBar(
+                        label_color=ACCENT_COLOR,
+                        unselected_label_color=TEXT_MUTED_COLOR,
+                        indicator_color=ACCENT_COLOR,
+                        overlay_color=ft.Colors.TRANSPARENT,
+                        divider_color=BORDER_COLOR,
                         tabs=[
                             ft.Tab(label="Watch", icon=ft.Icons.VIDEO_LIBRARY_OUTLINED),
                             ft.Tab(label="Channels", icon=ft.Icons.LIST_ALT_OUTLINED),
