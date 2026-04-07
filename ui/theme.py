@@ -78,10 +78,10 @@ def apply_page_theme(page: ft.Page) -> None:
     page.window.min_height = WINDOW_MIN_HEIGHT
 
     page.fonts = {
-        "Inter": "assets/fonts/Inter/Inter_18pt-Regular.ttf",
-        "Inter-SemiBold": "assets/fonts/Inter/Inter_18pt-SemiBold.ttf",
-        "PixelifySans": "assets/fonts/PixelifySans/PixelifySans-Regular.ttf",
-        "PixelifySans-SemiBold": "assets/fonts/PixelifySans/PixelifySans-SemiBold.ttf",
+        "Inter": "fonts/Inter/Inter_18pt-Regular.ttf",
+        "Inter-SemiBold": "fonts/Inter/Inter_18pt-SemiBold.ttf",
+        "PixelifySans": "fonts/PixelifySans/PixelifySans-Regular.ttf",
+        "PixelifySans-SemiBold": "fonts/PixelifySans/PixelifySans-SemiBold.ttf",
     }
 
     page.theme = ft.Theme(
