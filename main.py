@@ -4,6 +4,7 @@ import flet as ft
 
 from ui.channels_tab import ChannelsTab
 from ui.watch_tab import WatchTab
+from ui.chron_research_tab import ChronResearchTab
 from ui.theme import (
     ACCENT_COLOR,
     BORDER_COLOR,
@@ -20,10 +21,11 @@ def main(page: ft.Page) -> None:
         on_channels_changed=watch_tab.refresh_channel_count,
         on_channel_added=watch_tab.refresh_feeds,
     )
+    search_tab = ChronResearchTab(page)
 
     page.add(
         ft.Tabs(
-            length=2,
+            length=3,
             selected_index=0,
             animation_duration=200,
             content=ft.Column(
@@ -38,6 +40,7 @@ def main(page: ft.Page) -> None:
                         tabs=[
                             ft.Tab(label="Watch", icon=ft.Icons.VIDEO_LIBRARY_OUTLINED),
                             ft.Tab(label="Channels", icon=ft.Icons.LIST_ALT_OUTLINED),
+                            ft.Tab(label="Search", icon=ft.Icons.HISTORY),
                         ]
                     ),
                     ft.Container(
@@ -47,6 +50,7 @@ def main(page: ft.Page) -> None:
                             controls=[
                                 watch_tab.build(),
                                 channels_tab.build(),
+                                search_tab.build(),
                             ],
                         ),
                     ),

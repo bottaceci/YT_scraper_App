@@ -44,3 +44,10 @@ class SuccessfulRun:
 class ChannelConfig:
     channel_id: str
     label: str
+
+@dataclass
+class SearchResult:
+    query: str
+    searched_at: str
+    res_count: int
+    items: list[dict[str, Any]] = field(default_factory=list)

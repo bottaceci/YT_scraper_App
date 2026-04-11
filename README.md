@@ -25,6 +25,18 @@ Channel Watcher is built with **Python + Flet** and is designed for **personal u
 * **feedparser** for reading YouTube feed XML
 * Local JSON files for seen-state and recent run history
 
+## Version 2.0.0
+Main changes:
+- Added Chronological Research tab for YouTube searches
+- Improved UI structure and consistency
+- Added thumbnail-based result cards for search results
+- Improved feedback states, empty states, and error display
+- General app refinement and cleanup
+
+Status:
+- Personal release for local use
+- Validated on packaged build
+
 ## Current project layout
 
 ```text
@@ -35,12 +47,14 @@ Channel Watcher is built with **Python + Flet** and is designed for **personal u
 ├── scraper.py
 ├── storage.py
 ├── channel_store.py
+├── youtube_search.py
 ├── requirements.txt
 ├── ui/
 │   ├── theme.py
 │   ├── components.py
 │   ├── watch_tab.py
-│   └── channels_tab.py
+│   ├── channels_tab.py
+|   └── chron_research_tab.py
 └── assets/
     ├── icon.png
     ├── fonts/
@@ -49,7 +63,7 @@ Channel Watcher is built with **Python + Flet** and is designed for **personal u
 
 ## UI overview
 
-The app has two tabs:
+The app has three tabs:
 
 ### Watch
 
@@ -81,6 +95,19 @@ It lets you:
 * automatically resolve the human-readable channel title
 * remove a tracked channel
 * open the channel main page directly from the channel name
+
+### Search (NEW!)
+The Search tab is the tab that allows to run a chronological search on youtube videos.
+
+It lets you:
+
+* run a simple query and list the results in chronological order through the YouTube Data API
+* finetune advanced options such as 
+
+    * number of results to list
+    * maximum number of pages to look through
+    * maximum number of video candidates to take into consideration
+    * minimum duration of the videos (in seconds)
 
 ## Data storage
 
@@ -226,11 +253,13 @@ If the build environment reports conflicting Flutter installations, make sure yo
 * refine packaging metadata further
 * add button to update channel list - fetch new name and picture associated to the ID and update the database
 * add tags to channels, store them in the DB, and make it possible to check new videos only for channels corresponding to the selected tag(s). Show the tags in the channel page
-* add another tab for chronological video research on YouTube using the YT API
+* ~~add another tab for chronological video research on YouTube using the YT API~~
 
 ## Why this exists
 
 This app was built as a personal utility: a lightweight way to monitor a chosen set of YouTube channels without relying on subscriptions, platform notifications, or a browser-based workflow.
+
+After YouTube has taken away the chronological research option, the Search tab was added to bring back this function.
 
 It is intentionally local, simple, and focused.
 
