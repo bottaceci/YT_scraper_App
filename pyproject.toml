@@ -1,9 +1,10 @@
 [project]
 name = "channel-watcher"
-version = "0.1.0"
+version = "2.0.1"
 description = "Local Flet app for checking new YouTube videos from a fixed channel list."
 requires-python = ">=3.11"
 dependencies = [
   "flet",
   "feedparser",
+  "requests",
 ]
