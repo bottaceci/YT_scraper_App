@@ -271,9 +271,3 @@ This repository contains a complete working version of the app, including:
 * UI theme and assets
 * packaging-ready project structure
 * custom app icon support for the packaged Windows executable
-
-## License
-
-Add the license of your choice here.
-
-If you do not want others to reuse or redistribute the project, replace this section with the terms you want to apply.
